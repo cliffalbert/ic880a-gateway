@@ -8,13 +8,13 @@ if [ $UID != 0 ]; then
     exit 1
 fi
 
-VERSION="master"
+VERSION="spi"
 if [[ $1 != "" ]]; then VERSION=$1; fi
 
 echo "The Things Network Gateway installer"
 echo "Version $VERSION"
 
-# Update the gateway installer to the correct branch (defaults to master)
+# Update the gateway installer to the correct branch
 echo "Updating installer files..."
 OLD_HEAD=$(git rev-parse HEAD)
 git fetch
@@ -46,6 +46,7 @@ fi
 
 GATEWAY_EUI=$(ip link show $GATEWAY_EUI_NIC | awk '/ether/ {print $2}' | awk -F\: '{print $1$2$3"FFFE"$4$5$6}')
 GATEWAY_EUI=${GATEWAY_EUI^^} # toupper
+<<<<<<< HEAD
 
 echo "Detected EUI $GATEWAY_EUI from $GATEWAY_EUI_NIC"
 
@@ -75,6 +76,37 @@ else
     read GATEWAY_LON
     if [[ $GATEWAY_LON == "" ]]; then GATEWAY_LON=0; fi
 
+=======
+
+echo "Detected EUI $GATEWAY_EUI from $GATEWAY_EUI_NIC"
+
+read -r -p "Do you want to use remote settings file? [y/N]" response
+response=${response,,} # tolower
+
+if [[ $response =~ ^(yes|y) ]]; then
+    NEW_HOSTNAME="ttn-gateway"
+    REMOTE_CONFIG=true
+else
+    printf "       Host name [ttn-gateway]:"
+    read NEW_HOSTNAME
+    if [[ $NEW_HOSTNAME == "" ]]; then NEW_HOSTNAME="ttn-gateway"; fi
+
+    printf "       Descriptive name [ttn-ic880a]:"
+    read GATEWAY_NAME
+    if [[ $GATEWAY_NAME == "" ]]; then GATEWAY_NAME="ttn-ic880a"; fi
+
+    printf "       Contact email: "
+    read GATEWAY_EMAIL
+
+    printf "       Latitude [0]: "
+    read GATEWAY_LAT
+    if [[ $GATEWAY_LAT == "" ]]; then GATEWAY_LAT=0; fi
+
+    printf "       Longitude [0]: "
+    read GATEWAY_LON
+    if [[ $GATEWAY_LON == "" ]]; then GATEWAY_LON=0; fi
+
+>>>>>>> spi
     printf "       Altitude [0]: "
     read GATEWAY_ALT
     if [[ $GATEWAY_ALT == "" ]]; then GATEWAY_ALT=0; fi
@@ -91,48 +123,39 @@ if [[ $NEW_HOSTNAME != $CURRENT_HOSTNAME ]]; then
     sed -i "s/$CURRENT_HOSTNAME/$NEW_HOSTNAME/" /etc/hosts
 fi
 
-# Check dependencies
-echo "Installing dependencies..."
-apt-get install swig libftdi-dev python-dev
-
 # Install LoRaWAN packet forwarder repositories
-INSTALL_DIR="/opt/ttn-gateway"
+INSTALL_DIR="/opt/ttn-gateway-new"
 if [ ! -d "$INSTALL_DIR" ]; then mkdir $INSTALL_DIR; fi
 pushd $INSTALL_DIR
 
-# Build libraries
-if [ ! -d libmpsse ]; then
-    git clone https://github.com/devttys0/libmpsse.git
-    pushd libmpsse/src
-else
-    pushd libmpsse/src
-    git reset --hard
-    git pull
-fi
-
-./configure --disable-python
-make
-make install
-ldconfig
-
-popd
+# Remove WiringPi built from source (older installer versions)
+if [ -d wiringPi ]; then
+    pushd wiringPi
+    ./build uninstall
+    popd
+    rm -rf wiringPi
+fi 
 
 # Build LoRa gateway app
 if [ ! -d lora_gateway ]; then
+<<<<<<< HEAD
     git clone -b legacy https://github.com/TheThingsNetwork/lora_gateway.git
+=======
+    git clone https://github.com/Lora-net/lora_gateway.git
+>>>>>>> spi
     pushd lora_gateway
 else
     pushd lora_gateway
     git fetch origin
+<<<<<<< HEAD
     git checkout legacy
+=======
+    git checkout 
+>>>>>>> spi
     git reset --hard
 fi
 
-cp ./libloragw/99-libftdi.rules /etc/udev/rules.d/99-libftdi.rules
-
-sed -i -e 's/CFG_SPI= native/CFG_SPI= ftdi/g' ./libloragw/library.cfg
-sed -i -e 's/PLATFORM= kerlink/PLATFORM= lorank/g' ./libloragw/library.cfg
-sed -i -e 's/ATTRS{idProduct}=="6010"/ATTRS{idProduct}=="6014"/g' /etc/udev/rules.d/99-libftdi.rules
+sed -i -e 's/PLATFORM= kerlink/PLATFORM= imst_rpi/g' ./libloragw/library.cfg
 
 make
 
@@ -140,12 +163,20 @@ popd
 
 # Build packet forwarder
 if [ ! -d packet_forwarder ]; then
+<<<<<<< HEAD
     git clone -b legacy https://github.com/TheThingsNetwork/packet_forwarder.git
+=======
+    git clone https://github.com/Lora-net/packet_forwarder.git
+>>>>>>> spi
     pushd packet_forwarder
 else
     pushd packet_forwarder
     git fetch origin
+<<<<<<< HEAD
     git checkout legacy
+=======
+    git checkout
+>>>>>>> spi
     git reset --hard
 fi
 
@@ -155,10 +186,16 @@ popd
 
 # Symlink poly packet forwarder
 if [ ! -d bin ]; then mkdir bin; fi
-if [ -f ./bin/poly_pkt_fwd ]; then rm ./bin/poly_pkt_fwd; fi
-ln -s $INSTALL_DIR/packet_forwarder/poly_pkt_fwd/poly_pkt_fwd ./bin/poly_pkt_fwd
-cp -f ./packet_forwarder/poly_pkt_fwd/global_conf.json ./bin/global_conf.json
+if [ -f ./bin/lora_pkt_fwd ]; then rm ./bin/lora_pkt_fwd; fi
+ln -s $INSTALL_DIR/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd ./bin/lora_pkt_fwd
+cp -f ./packet_forwarder/lora_pkt_fwd/global_conf.json ./bin/global_conf.json
 
+LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
+
+# Remove old config file
+if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE; fi;
+
+<<<<<<< HEAD
 LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
 
 # Remove old config file
@@ -175,6 +212,19 @@ if [ "$REMOTE_CONFIG" = true ] ; then
         git reset --hard
     fi
 
+=======
+if [ "$REMOTE_CONFIG" = true ] ; then
+    # Get remote configuration repo
+    if [ ! -d gateway-remote-config ]; then
+        git clone https://github.com/ttn-zh/gateway-remote-config.git
+        pushd gateway-remote-config
+    else
+        pushd gateway-remote-config
+        git pull
+        git reset --hard
+    fi
+
+>>>>>>> spi
     ln -s $INSTALL_DIR/gateway-remote-config/$GATEWAY_EUI.json $LOCAL_CONFIG_FILE
 
     popd
@@ -192,9 +242,9 @@ echo "Installation completed."
 
 # Start packet forwarder as a service
 cp ./start.sh $INSTALL_DIR/bin/
-cp ./ttn-gateway.service /lib/systemd/system/
-systemctl enable ttn-gateway.service
+#cp ./ttn-gateway.service /lib/systemd/system/
+#systemctl enable ttn-gateway.service
 
 echo "The system will reboot in 5 seconds..."
-sleep 5
-shutdown -r now
+#sleep 5
+#shutdown -r now
