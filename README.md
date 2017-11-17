@@ -2,7 +2,8 @@
 
 Reference setup for [The Things Network](http://thethingsnetwork.org/) gateways based on the iC880a SPI concentrator with a Raspberry Pi host.
 
-This installer targets the **SPI version** of the board, if you have the USB version, [check this branch](https://github.com/ttn-zh/ic880a-gateway/tree/master).
+This is my first attempt at upgrading the installer to the latest Packet Forwarder and libloragw from semtech.
+
 
 ## Setup
 
@@ -26,3 +27,5 @@ If you have a running gateway and want to update, simply run the installer again
 # Credits
 
 These scripts are largely based on the awesome work by [Ruud Vlaming](https://github.com/devlaam) on the [Lorank8 installer](https://github.com/Ideetron/Lorank).
+
+Fork from the original Zurich TTN ic880a-gateway Script
