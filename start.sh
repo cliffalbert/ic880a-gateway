@@ -51,10 +51,5 @@ if [ -d ../gateway-remote-config ]; then
 
 fi
 
-<<<<<<< HEAD
-# Fire up the forwarder.  
-./poly_pkt_fwd
-=======
 # Fire up the forwarder.
 ./poly_pkt_fwd
->>>>>>> spi

@@ -46,7 +46,6 @@ fi
 
 GATEWAY_EUI=$(ip link show $GATEWAY_EUI_NIC | awk '/ether/ {print $2}' | awk -F\: '{print $1$2$3"FFFE"$4$5$6}')
 GATEWAY_EUI=${GATEWAY_EUI^^} # toupper
-<<<<<<< HEAD
 
 echo "Detected EUI $GATEWAY_EUI from $GATEWAY_EUI_NIC"
 
@@ -76,37 +75,6 @@ else
     read GATEWAY_LON
     if [[ $GATEWAY_LON == "" ]]; then GATEWAY_LON=0; fi
 
-=======
-
-echo "Detected EUI $GATEWAY_EUI from $GATEWAY_EUI_NIC"
-
-read -r -p "Do you want to use remote settings file? [y/N]" response
-response=${response,,} # tolower
-
-if [[ $response =~ ^(yes|y) ]]; then
-    NEW_HOSTNAME="ttn-gateway"
-    REMOTE_CONFIG=true
-else
-    printf "       Host name [ttn-gateway]:"
-    read NEW_HOSTNAME
-    if [[ $NEW_HOSTNAME == "" ]]; then NEW_HOSTNAME="ttn-gateway"; fi
-
-    printf "       Descriptive name [ttn-ic880a]:"
-    read GATEWAY_NAME
-    if [[ $GATEWAY_NAME == "" ]]; then GATEWAY_NAME="ttn-ic880a"; fi
-
-    printf "       Contact email: "
-    read GATEWAY_EMAIL
-
-    printf "       Latitude [0]: "
-    read GATEWAY_LAT
-    if [[ $GATEWAY_LAT == "" ]]; then GATEWAY_LAT=0; fi
-
-    printf "       Longitude [0]: "
-    read GATEWAY_LON
-    if [[ $GATEWAY_LON == "" ]]; then GATEWAY_LON=0; fi
-
->>>>>>> spi
     printf "       Altitude [0]: "
     read GATEWAY_ALT
     if [[ $GATEWAY_ALT == "" ]]; then GATEWAY_ALT=0; fi
@@ -138,20 +106,12 @@ fi
 
 # Build LoRa gateway app
 if [ ! -d lora_gateway ]; then
-<<<<<<< HEAD
-    git clone -b legacy https://github.com/TheThingsNetwork/lora_gateway.git
-=======
     git clone https://github.com/Lora-net/lora_gateway.git
->>>>>>> spi
     pushd lora_gateway
 else
     pushd lora_gateway
     git fetch origin
-<<<<<<< HEAD
-    git checkout legacy
-=======
     git checkout 
->>>>>>> spi
     git reset --hard
 fi
 
@@ -163,20 +123,12 @@ popd
 
 # Build packet forwarder
 if [ ! -d packet_forwarder ]; then
-<<<<<<< HEAD
-    git clone -b legacy https://github.com/TheThingsNetwork/packet_forwarder.git
-=======
     git clone https://github.com/Lora-net/packet_forwarder.git
->>>>>>> spi
     pushd packet_forwarder
 else
     pushd packet_forwarder
     git fetch origin
-<<<<<<< HEAD
-    git checkout legacy
-=======
     git checkout
->>>>>>> spi
     git reset --hard
 fi
 
@@ -195,12 +147,6 @@ LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
 # Remove old config file
 if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE; fi;
 
-<<<<<<< HEAD
-LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
-
-# Remove old config file
-if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE; fi;
-
 if [ "$REMOTE_CONFIG" = true ] ; then
     # Get remote configuration repo
     if [ ! -d gateway-remote-config ]; then
@@ -212,19 +158,6 @@ if [ "$REMOTE_CONFIG" = true ] ; then
         git reset --hard
     fi
 
-=======
-if [ "$REMOTE_CONFIG" = true ] ; then
-    # Get remote configuration repo
-    if [ ! -d gateway-remote-config ]; then
-        git clone https://github.com/ttn-zh/gateway-remote-config.git
-        pushd gateway-remote-config
-    else
-        pushd gateway-remote-config
-        git pull
-        git reset --hard
-    fi
-
->>>>>>> spi
     ln -s $INSTALL_DIR/gateway-remote-config/$GATEWAY_EUI.json $LOCAL_CONFIG_FILE
 
     popd
